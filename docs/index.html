@@ -1,0 +1,535 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="Bret McKinney — Study Director, agent builder. Building autonomous systems at the frontier of AI.">
+<title>Bret McKinney</title>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 52 52'><rect x='12' y='10' width='28' height='28' rx='5' fill='%23d4a35a'/><circle cx='21' cy='22' r='3' fill='%230c0c0b'/><circle cx='31' cy='22' r='3' fill='%230c0c0b'/><path d='M20 30 Q26 35 32 30' stroke='%230c0c0b' stroke-width='2' fill='none' stroke-linecap='round'/><rect x='4' y='24' width='10' height='6' rx='2' fill='%23d4a35a'/><rect x='2' y='18' width='6' height='8' rx='2' fill='%23d4a35a'/><rect x='2' y='29' width='6' height='7' rx='2' fill='%23d4a35a'/><rect x='38' y='24' width='10' height='6' rx='2' fill='%23d4a35a'/><rect x='44' y='18' width='6' height='8' rx='2' fill='%23d4a35a'/><rect x='44' y='29' width='6' height='7' rx='2' fill='%23d4a35a'/><rect x='17' y='36' width='5' height='9' rx='2' fill='%23d4a35a'/><rect x='30' y='36' width='5' height='9' rx='2' fill='%23d4a35a'/><rect x='15' y='43' width='4' height='4' rx='2' fill='%23d4a35a'/><rect x='20' y='44' width='3' height='3' rx='2' fill='%23d4a35a'/><rect x='28' y='43' width='4' height='4' rx='2' fill='%23d4a35a'/><rect x='33' y='44' width='3' height='3' rx='2' fill='%23d4a35a'/></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg-primary: #0c0f14;
+  --bg-card: #0f141c;
+  --border: #1e3040;
+  --text-primary: #c8dde8;
+  --text-secondary: #8ab8d8;
+  --text-muted: #4a6a7a;
+  --accent: #d4a35a;
+  --accent-hover: #e0b46a;
+  --success: #27ae60;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body {
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  font-family: 'IBM Plex Sans', sans-serif;
+  font-weight: 300;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+a { color: inherit; text-decoration: none; }
+
+/* NAV */
+.nav {
+  position: fixed; top: 0; left: 0; right: 0;
+  height: 52px;
+  background: #0c0f14;
+  border-bottom: 0.5px solid #1a2030;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0 40px;
+  z-index: 100;
+}
+.wordmark {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-primary);
+  letter-spacing: 0.02em;
+}
+.wordmark .accent { color: var(--accent); }
+.nav-links {
+  display: flex; gap: 28px;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 0.06em;
+}
+.nav-links a {
+  color: var(--text-muted);
+  transition: color 0.15s;
+}
+.nav-links a:hover { color: var(--accent); }
+
+/* HERO */
+.hero {
+  padding: 100px 40px 72px;
+  border-bottom: 0.5px solid #1a2030;
+  margin-top: 52px;
+}
+.eyebrow {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 11px;
+  color: var(--accent);
+  letter-spacing: 0.14em;
+  margin-bottom: 24px;
+}
+.headline {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 40px;
+  font-weight: 500;
+  color: var(--text-primary);
+  line-height: 1.25;
+  margin-bottom: 16px;
+  max-width: 720px;
+}
+.headline .accent { color: var(--accent); }
+.subtext {
+  font-family: 'IBM Plex Sans', sans-serif;
+  font-size: 14px;
+  font-weight: 300;
+  color: var(--text-muted);
+  max-width: 540px;
+  line-height: 1.7;
+}
+
+/* SECTION */
+.section {
+  padding: 72px 40px;
+  border-bottom: 0.5px solid #1a2030;
+}
+.section-label {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 10px;
+  color: #2a4a5a;
+  letter-spacing: 0.14em;
+  margin-bottom: 28px;
+}
+
+/* WORK GRID */
+.work-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+}
+.card {
+  background: var(--bg-card);
+  border: 0.5px solid var(--border);
+  border-radius: 6px;
+  padding: 20px;
+  transition: border-color 0.15s;
+}
+.card:hover { border-color: var(--text-muted); }
+.card.featured { border: 1px solid var(--accent); }
+.card.featured:hover { border-color: var(--accent-hover); }
+.badge {
+  display: flex; align-items: center; gap: 5px;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 9px;
+  letter-spacing: 0.08em;
+  margin-bottom: 10px;
+}
+.badge .dot {
+  width: 6px; height: 6px; border-radius: 50%;
+  display: inline-block;
+}
+.badge.live .dot { background: var(--success); }
+.badge.live { color: var(--success); }
+.badge.active .dot { background: var(--accent); }
+.badge.active { color: var(--accent); }
+.badge.building .dot { background: var(--text-muted); }
+.badge.building { color: var(--text-muted); }
+.card-title {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  margin-bottom: 6px;
+}
+.card-title a { color: inherit; transition: color 0.15s; }
+.card-title a:hover { color: var(--accent); }
+.card-title a::after {
+  content: '';
+  display: inline-block;
+  margin-left: 6px;
+  opacity: 0;
+  transition: opacity 0.15s;
+}
+.card-title a:hover::after {
+  content: ' \2192';
+  opacity: 1;
+}
+.card-desc {
+  font-family: 'IBM Plex Sans', sans-serif;
+  font-size: 12px;
+  font-weight: 300;
+  color: var(--text-muted);
+  line-height: 1.6;
+}
+
+/* WRITING */
+.writing-intro {
+  font-family: 'IBM Plex Sans', sans-serif;
+  font-size: 13px;
+  color: var(--text-muted);
+  margin-bottom: 32px;
+}
+.post {
+  border-bottom: 0.5px solid #1a2030;
+  padding-bottom: 20px;
+  margin-bottom: 20px;
+}
+.post-date {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 11px;
+  color: #2a4a5a;
+  margin-bottom: 4px;
+}
+.post-title {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-secondary);
+  display: block;
+  margin-bottom: 4px;
+  transition: color 0.15s;
+}
+.post-title:hover { color: var(--accent); }
+.post-desc {
+  font-family: 'IBM Plex Sans', sans-serif;
+  font-size: 12px;
+  font-weight: 300;
+  color: var(--text-muted);
+  line-height: 1.6;
+}
+.all-writing {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 11px;
+  color: var(--accent);
+  margin-top: 16px;
+  display: inline-block;
+  letter-spacing: 0.04em;
+}
+.all-writing:hover { color: var(--accent-hover); }
+
+/* FAQ */
+.faq-item { border-bottom: 0.5px solid #1e3040; }
+.faq-question {
+  width: 100%;
+  background: none;
+  border: none;
+  text-align: left;
+  padding: 18px 0;
+  cursor: pointer;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 13px;
+  font-weight: 500;
+  color: #8ab8d8;
+  letter-spacing: 0.01em;
+  transition: color 0.15s;
+}
+.faq-question:hover { color: #d4a35a; }
+.faq-chevron {
+  font-size: 12px;
+  color: #d4a35a;
+  transition: transform 0.2s;
+  flex-shrink: 0;
+  margin-left: 16px;
+}
+.faq-question[aria-expanded="true"] .faq-chevron { transform: rotate(90deg); }
+.faq-answer {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.25s ease;
+}
+.faq-answer.open { max-height: 400px; }
+.faq-answer-inner {
+  padding: 0 0 18px;
+  font-size: 13px;
+  line-height: 1.7;
+  color: #4a6a7a;
+  font-family: 'IBM Plex Sans', sans-serif;
+}
+
+/* ABOUT */
+.about-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 48px;
+}
+.about-block p {
+  font-family: 'IBM Plex Sans', sans-serif;
+  font-size: 13px;
+  font-weight: 300;
+  color: var(--text-muted);
+  line-height: 1.7;
+}
+.stack-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.tag {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 10px;
+  color: #4a7a9a;
+  background: #0f1828;
+  border: 0.5px solid var(--border);
+  border-radius: 3px;
+  padding: 4px 9px;
+  letter-spacing: 0.02em;
+}
+
+/* FOOTER */
+.footer {
+  background: #080b10;
+  border-top: 0.5px solid #1a2030;
+  padding: 20px 40px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 10px;
+  color: #2a3a4a;
+}
+.footer-links {
+  display: flex;
+  gap: 16px;
+}
+.footer-links a {
+  color: #2a3a4a;
+  transition: color 0.15s;
+}
+.footer-links a:hover { color: var(--accent); }
+
+/* MOBILE */
+@media (max-width: 768px) {
+  .work-grid { grid-template-columns: 1fr; }
+  .about-grid { grid-template-columns: 1fr; gap: 32px; }
+  .hero { padding: 60px 20px; }
+  .section { padding: 48px 20px; }
+  .nav { padding: 0 20px; }
+  .nav-links a:not(.gh-link) { display: none; }
+  .footer { padding: 16px 20px; flex-wrap: wrap; gap: 12px; }
+}
+@media (max-width: 480px) {
+  .headline { font-size: 28px; }
+}
+</style>
+</head>
+<body>
+
+<nav class="nav">
+  <a href="/" class="wordmark">bret<span class="accent">mckinney</span></a>
+  <div class="nav-links">
+    <a href="#work">work</a>
+    <a href="#writing">writing</a>
+    <a href="#about">about</a>
+    <a href="https://github.com/BuzzardsBay" class="gh-link" target="_blank" rel="noopener">github &rarr;</a>
+  </div>
+</nav>
+
+<section class="hero">
+  <div class="eyebrow">STUDY DIRECTOR &middot; AGENT BUILDER &middot; SALT LAKE CITY</div>
+  <h1 class="headline">Building autonomous systems<br>at the <span class="accent">frontier</span> of AI.</h1>
+  <p class="subtext">Self-taught engineer with a lab sciences background. I build production systems &mdash; autonomous research agents, trading infrastructure, and hardened local AI runtimes &mdash; and ship them.</p>
+</section>
+
+<section class="section" id="work">
+  <div class="section-label">WORK</div>
+  <div class="work-grid">
+
+    <div class="card featured">
+      <div class="badge live"><span class="dot"></span>LIVE</div>
+      <h3 class="card-title"><a href="https://clawfactory.app" target="_blank" rel="noopener">ClawFactory</a></h3>
+      <p class="card-desc">Hardened Windows installer for OpenClaw. WSL2 sandbox, egress firewall, DPAPI key storage, kill switch. One-click .exe.</p>
+    </div>
+
+    <div class="card featured">
+      <div class="badge live"><span class="dot"></span>LIVE</div>
+      <h3 class="card-title"><a href="https://avitalresearch.com" target="_blank" rel="noopener">Avital Research</a></h3>
+      <p class="card-desc">Macro-first investment intelligence platform. 7-pillar regime classification engine, portfolio allocations, economic calendar.</p>
+    </div>
+
+    <div class="card">
+      <div class="badge active"><span class="dot"></span>ACTIVE</div>
+      <h3 class="card-title">FrontierAI</h3>
+      <p class="card-desc">Autonomous multi-agent research system running 24/7. 641+ objectives completed across macro, crypto, geopolitics, and regime classification.</p>
+    </div>
+
+    <div class="card">
+      <div class="badge live"><span class="dot"></span>LIVE</div>
+      <h3 class="card-title"><a href="https://github.com/BuzzardsBay/clawagent-setup/releases/latest" target="_blank" rel="noopener">ClawAgent</a></h3>
+      <p class="card-desc">Single-agent local AI runtime. Same security substrate as ClawFactory &mdash; WSL2, egress firewall, DPAPI &mdash; faster install.</p>
+    </div>
+
+    <div class="card">
+      <div class="badge active"><span class="dot"></span>ACTIVE</div>
+      <h3 class="card-title">ClawChat</h3>
+      <p class="card-desc">Native Windows desktop chat interface for local AI agents. Conversation history, dark/light themes, streams from local gateway.</p>
+    </div>
+
+    <div class="card">
+      <div class="badge building"><span class="dot"></span>BUILDING</div>
+      <h3 class="card-title">Strategy Factory</h3>
+      <p class="card-desc">Autonomous strategy research and backtesting pipeline. Generates, tests, and ranks trading strategies across macro regimes. BTC, ETH, SOL, XRP.</p>
+    </div>
+
+  </div>
+</section>
+
+<section class="section" id="writing">
+  <div class="section-label">WRITING</div>
+  <p class="writing-intro">Occasional notes on building, AI infrastructure, and markets.</p>
+
+  <div class="post">
+    <div class="post-date">May 2026</div>
+    <a class="post-title" href="/writing/17-versions.html">17 versions to ship a Windows installer</a>
+    <p class="post-desc">What it actually takes to build a hardened installer from scratch &mdash; the bugs, the Azure validation cycles, and what I learned.</p>
+  </div>
+
+  <div class="post">
+    <div class="post-date">May 2026</div>
+    <a class="post-title" href="/writing/frontierai-architecture.html">How FrontierAI's multi-agent loop works</a>
+    <p class="post-desc">Architecture notes on running a 24/7 autonomous research system &mdash; orchestration, memory, and the Gemini/Claude split.</p>
+  </div>
+
+  <div class="post">
+    <div class="post-date">April 2026</div>
+    <a class="post-title" href="/writing/regime-classification.html">Regime classification for retail investors</a>
+    <p class="post-desc">The 5-regime framework behind Avital Research and why macro context changes everything.</p>
+  </div>
+
+  <a href="/writing/" class="all-writing">All writing &rarr;</a>
+</section>
+
+<section class="section" id="faq">
+  <div class="section-label">FAQ</div>
+
+  <div class="faq-item">
+    <button class="faq-question" aria-expanded="false">
+      <span>What is ClawFactory?</span>
+      <span class="faq-chevron">&rsaquo;</span>
+    </button>
+    <div class="faq-answer">
+      <div class="faq-answer-inner">A hardened Windows installer for OpenClaw. WSL2 sandbox, egress firewall scoped to a single Linux user, loopback-only gateway, DPAPI key storage, Kill Switch. One-click .exe. Available at clawfactory.app &mdash; $149 for the full factory setup, $49 for ClawAgent (single agent).</div>
+    </div>
+  </div>
+
+  <div class="faq-item">
+    <button class="faq-question" aria-expanded="false">
+      <span>What is FrontierAI?</span>
+      <span class="faq-chevron">&rsaquo;</span>
+    </button>
+    <div class="faq-answer">
+      <div class="faq-answer-inner">A local autonomous multi-agent research system running 24/7 on my machine. It pulls objectives from a queue, dispatches research agents, stores findings in a vector database, and synthesizes investment intelligence for Avital Research. Not open source &mdash; private production system.</div>
+    </div>
+  </div>
+
+  <div class="faq-item">
+    <button class="faq-question" aria-expanded="false">
+      <span>What is Avital Research?</span>
+      <span class="faq-chevron">&rsaquo;</span>
+    </button>
+    <div class="faq-answer">
+      <div class="faq-answer-inner">A macro-first investment intelligence platform. It classifies the current macro regime across 7 pillars &mdash; growth, inflation, liquidity, rates, credit, dollar, risk appetite &mdash; and produces portfolio allocation recommendations for two archetypes: capital preservation and high-beta upside capture.</div>
+    </div>
+  </div>
+
+  <div class="faq-item">
+    <button class="faq-question" aria-expanded="false">
+      <span>Are you available for work or consulting?</span>
+      <span class="faq-chevron">&rsaquo;</span>
+    </button>
+    <div class="faq-answer">
+      <div class="faq-answer-inner">Reach out at bret@bretmckinney.com. I'm not actively looking but I'm open to interesting conversations &mdash; particularly anything involving autonomous systems, AI infrastructure, or quantitative research.</div>
+    </div>
+  </div>
+
+  <div class="faq-item">
+    <button class="faq-question" aria-expanded="false">
+      <span>What's your background?</span>
+      <span class="faq-chevron">&rsaquo;</span>
+    </button>
+    <div class="faq-answer">
+      <div class="faq-answer-inner">Study Director at Nelson Laboratories in Salt Lake City &mdash; lab sciences day job. Self-taught in software. I learn by building production systems and shipping them.</div>
+    </div>
+  </div>
+
+</section>
+
+<section class="section" id="about">
+  <div class="about-grid">
+    <div class="about-block">
+      <div class="section-label">BACKGROUND</div>
+      <p>Study Director at Nelson Laboratories, Salt Lake City. Lab sciences background, self-taught in software. Building a fully autonomous AI organization on the side &mdash; research agents, trading infrastructure, publishing pipeline, and the tools to run all of it locally with real security controls.</p>
+    </div>
+    <div class="about-block">
+      <div class="section-label">STACK</div>
+      <div class="stack-tags">
+        <span class="tag">Python</span>
+        <span class="tag">React</span>
+        <span class="tag">TypeScript</span>
+        <span class="tag">Rust/Tauri</span>
+        <span class="tag">PostgreSQL</span>
+        <span class="tag">Pinecone</span>
+        <span class="tag">WSL2</span>
+        <span class="tag">Claude Sonnet</span>
+        <span class="tag">Gemini Flash</span>
+        <span class="tag">Railway</span>
+        <span class="tag">Azure</span>
+        <span class="tag">Kraken API</span>
+        <span class="tag">Inno Setup</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer class="footer">
+  <div>&copy; 2026 Bret McKinney</div>
+  <div class="footer-links">
+    <a href="https://github.com/BuzzardsBay" target="_blank" rel="noopener">github &rarr;</a>
+    <a href="https://x.com/buzzardsbay88" target="_blank" rel="noopener">x &rarr;</a>
+    <a href="mailto:bret@bretmckinney.com">email &rarr;</a>
+  </div>
+  <div>bretmckinney.com</div>
+</footer>
+
+<script>
+document.querySelectorAll('a[href^="#"]').forEach(a => {
+  a.addEventListener('click', e => {
+    const id = a.getAttribute('href');
+    if (id.length > 1) {
+      const target = document.querySelector(id);
+      if (target) {
+        e.preventDefault();
+        target.scrollIntoView({ behavior: 'smooth' });
+      }
+    }
+  });
+});
+
+const faqButtons = document.querySelectorAll('.faq-question');
+faqButtons.forEach(btn => {
+  btn.addEventListener('click', () => {
+    const isOpen = btn.getAttribute('aria-expanded') === 'true';
+    faqButtons.forEach(other => {
+      other.setAttribute('aria-expanded', 'false');
+      other.nextElementSibling.classList.remove('open');
+    });
+    if (!isOpen) {
+      btn.setAttribute('aria-expanded', 'true');
+      btn.nextElementSibling.classList.add('open');
+    }
+  });
+});
+</script>
+
+</body>
+</html>
