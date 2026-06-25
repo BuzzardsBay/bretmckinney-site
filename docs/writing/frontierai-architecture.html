@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="FrontierAI — Architecture Notes. Design decisions behind a 21-agent autonomous research system: agent specialization, two-layer memory, queue-based orchestration, and the human-in-the-loop publish gate.">
+<title>FrontierAI — Architecture Notes — Bret McKinney</title>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 52 52'><rect x='12' y='10' width='28' height='28' rx='5' fill='%23d4a35a'/><circle cx='21' cy='22' r='3' fill='%230c0c0b'/><circle cx='31' cy='22' r='3' fill='%230c0c0b'/><path d='M20 30 Q26 35 32 30' stroke='%230c0c0b' stroke-width='2' fill='none' stroke-linecap='round'/><rect x='4' y='24' width='10' height='6' rx='2' fill='%23d4a35a'/><rect x='2' y='18' width='6' height='8' rx='2' fill='%23d4a35a'/><rect x='2' y='29' width='6' height='7' rx='2' fill='%23d4a35a'/><rect x='38' y='24' width='10' height='6' rx='2' fill='%23d4a35a'/><rect x='44' y='18' width='6' height='8' rx='2' fill='%23d4a35a'/><rect x='44' y='29' width='6' height='7' rx='2' fill='%23d4a35a'/><rect x='17' y='36' width='5' height='9' rx='2' fill='%23d4a35a'/><rect x='30' y='36' width='5' height='9' rx='2' fill='%23d4a35a'/><rect x='15' y='43' width='4' height='4' rx='2' fill='%23d4a35a'/><rect x='20' y='44' width='3' height='3' rx='2' fill='%23d4a35a'/><rect x='28' y='43' width='4' height='4' rx='2' fill='%23d4a35a'/><rect x='33' y='44' width='3' height='3' rx='2' fill='%23d4a35a'/></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg-primary: #0c0f14;
+  --bg-card: #0f141c;
+  --border: #243648;
+  --text-primary: #dbeaf2;
+  --text-secondary: #aecbde;
+  --text-body: #9db4c4;
+  --text-muted: #7593a6;
+  --text-faint: #647e91;
+  --accent: #d4a35a;
+  --accent-hover: #e0b46a;
+  --success: #27ae60;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body {
+  background: var(--bg-primary);
+  color: var(--text-body);
+  font-family: 'IBM Plex Sans', sans-serif;
+  font-weight: 300;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+a { color: inherit; text-decoration: none; }
+
+/* NAV */
+.nav {
+  position: fixed; top: 0; left: 0; right: 0;
+  height: 52px;
+  background: #0c0f14;
+  border-bottom: 0.5px solid #1a2030;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0 40px;
+  z-index: 100;
+}
+.wordmark {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-primary);
+  letter-spacing: 0.02em;
+}
+.wordmark .accent { color: var(--accent); }
+.nav-links {
+  display: flex; gap: 28px;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 0.06em;
+}
+.nav-links a { color: var(--text-muted); transition: color 0.15s; }
+.nav-links a:hover { color: var(--accent); }
+
+/* ARTICLE */
+.article {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 100px 40px 80px;
+}
+.back-link {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 11px;
+  color: var(--accent);
+  letter-spacing: 0.06em;
+  display: inline-block;
+  margin-bottom: 36px;
+}
+.back-link:hover { color: var(--accent-hover); }
+.article h1 {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 30px;
+  font-weight: 600;
+  color: var(--text-primary);
+  line-height: 1.25;
+  margin-bottom: 14px;
+}
+.article-meta {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 11px;
+  color: var(--text-faint);
+  letter-spacing: 0.08em;
+  margin-bottom: 8px;
+}
+.article h2 {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--text-primary);
+  line-height: 1.3;
+  margin: 52px 0 16px;
+}
+.article h3 {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  letter-spacing: 0.02em;
+  margin: 30px 0 12px;
+}
+.article p {
+  font-size: 14px;
+  font-weight: 300;
+  color: var(--text-body);
+  line-height: 1.75;
+  margin-bottom: 16px;
+}
+.article ul {
+  list-style: none;
+  margin: 0 0 16px;
+  padding: 0;
+}
+.article li {
+  position: relative;
+  font-size: 14px;
+  font-weight: 300;
+  color: var(--text-body);
+  line-height: 1.7;
+  padding-left: 20px;
+  margin-bottom: 9px;
+}
+.article li::before {
+  content: '\2013';
+  position: absolute;
+  left: 0;
+  color: var(--accent);
+}
+.article strong { color: var(--text-secondary); font-weight: 500; }
+.article em { color: var(--text-muted); font-style: italic; }
+.article code {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 12.5px;
+  color: var(--text-secondary);
+  background: #0f1828;
+  border: 0.5px solid var(--border);
+  border-radius: 3px;
+  padding: 1px 6px;
+}
+.article .rule {
+  border: none;
+  border-top: 0.5px solid #1a2030;
+  margin: 44px 0;
+}
+.article .callout {
+  border-left: 2px solid var(--border);
+  padding-left: 16px;
+  margin: 0 0 16px;
+}
+
+/* FOOTER */
+.footer {
+  background: #080b10;
+  border-top: 0.5px solid #1a2030;
+  padding: 20px 40px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 10px;
+  color: var(--text-faint);
+}
+.footer-links { display: flex; gap: 16px; }
+.footer-links a { color: var(--text-faint); transition: color 0.15s; }
+.footer-links a:hover { color: var(--accent); }
+
+@media (max-width: 768px) {
+  .nav { padding: 0 20px; }
+  .nav-links a:not(.gh-link) { display: none; }
+  .article { padding: 80px 20px 60px; }
+  .article h1 { font-size: 24px; }
+  .footer { padding: 16px 20px; flex-wrap: wrap; gap: 12px; }
+}
+</style>
+</head>
+<body>
+
+<nav class="nav">
+  <a href="/" class="wordmark">bret<span class="accent">mckinney</span></a>
+  <div class="nav-links">
+    <a href="/#work">work</a>
+    <a href="/#system">system</a>
+    <a href="/#about">about</a>
+    <a href="https://github.com/BuzzardsBay" class="gh-link" target="_blank" rel="noopener">github &rarr;</a>
+  </div>
+</nav>
+
+<article class="article">
+  <a href="/#work" class="back-link">&larr; back</a>
+
+  <h1>FrontierAI — Architecture Notes</h1>
+  <div class="article-meta">bretmckinney.com · Bret McKinney · June 2026</div>
+
+  <p>FrontierAI is a 21-agent autonomous research system running 24/7 on a local machine. It has completed over 8,500 research objectives without human intervention. This document covers the architectural decisions that made that possible — why each layer is designed the way it is, what alternatives were considered, and what the trade-offs look like in practice.</p>
+
+  <p>This is not a tutorial. It is a record of decisions made while building a production system under real constraints: local compute, limited budget, no DevOps team, and a requirement that the system run continuously without manual intervention.</p>
+
+  <hr class="rule">
+
+  <h2>The Problem</h2>
+  <p>Macro investment research is continuous. Markets move on Fed communications, Treasury flows, geopolitical events, credit spreads, and dozens of other signals simultaneously. Staying current requires monitoring all of them, synthesizing relationships between them, and updating a structured knowledge base as conditions change.</p>
+  <p>A human can do this for a few hours a day. A single AI model can process a prompt but cannot maintain state, schedule itself, or pursue a research agenda autonomously. Neither solution produces continuous, compounding intelligence.</p>
+  <p>The requirement: a system that runs without human prompting, generates its own research objectives, executes them, stores the findings in a way that builds on prior work, and delivers validated output to a subscriber-facing platform. FrontierAI is that system.</p>
+
+  <hr class="rule">
+
+  <h2>High-Level Architecture</h2>
+  <p>The system has four layers:</p>
+  <ul>
+    <li>Objective queue — what needs to be researched</li>
+    <li>Agent layer — specialized agents that execute research, store findings, and synthesize output</li>
+    <li>Memory layer — persistent knowledge base that agents read from and write to</li>
+    <li>Publishing pipeline — validated output delivered to Avital Research</li>
+  </ul>
+  <p>The orchestrator sits above all four layers. It runs a master loop on a 600-second cadence, pulls objectives from the queue, dispatches them to the appropriate agent, handles failures, and manages the weekly rhythm of dedicated regime classification work.</p>
+  <p><strong>Key design principle:</strong> No agent has global state. Each agent receives its task, executes it, writes to the memory layer, and exits. The orchestrator maintains continuity, not the agents. This makes individual agents replaceable without disrupting the system.</p>
+
+  <hr class="rule">
+
+  <h2>Agent Design</h2>
+
+  <h3>Specialization Over Generality</h3>
+  <p>FrontierAI uses 21 specialized agents rather than one general-purpose agent for the same reason a newsroom uses reporters, editors, and fact-checkers rather than one person doing everything. Each role requires a different cognitive posture.</p>
+  <p>The agent roster by function:</p>
+  <ul>
+    <li><code>Research, Reasoning, Synthesis, Scout, Curator</code> — the research cluster. These agents gather raw information, assess credibility, and produce structured findings.</li>
+    <li><code>Memory, Knowledge, Report Gen, Valuation, News Scanner</code> — the knowledge cluster. These agents store, index, retrieve, and format findings for downstream consumption.</li>
+    <li><code>Publishing, Social, Avital Sync, Integration Bridge, Notifications</code> — the communications cluster. These agents move validated output to external surfaces.</li>
+    <li><code>Orchestrator, Chief of Staff, Health Monitor, Catalyst Monitor, Rhythm Engine, Execution</code> — the operations cluster. These agents manage scheduling, system health, and the trading paper mode.</li>
+  </ul>
+  <p>Specialization has a cost: coordination complexity. The orchestrator must know which agent handles which task and route accordingly. This routing logic is centralized in the orchestrator rather than distributed across agents, which makes the system easier to reason about when something breaks.</p>
+
+  <h3>Model Selection</h3>
+  <p>Not all agents use the same model. This is an intentional cost and performance optimization.</p>
+  <ul>
+    <li>Gemini 2.5 Flash handles research agents — high volume, fast turnaround, web search integration via Tavily. Cost matters here because research agents run constantly.</li>
+    <li>Claude handles execution and synthesis tasks that require deeper reasoning, nuanced judgment, or decisions about whether to deepen or pivot on a research thread. More expensive, used selectively.</li>
+  </ul>
+  <p>Using a single expensive model for every task would make the system economically unviable at the volume FrontierAI operates. The right tool for each job is a cost discipline, not a compromise.</p>
+  <p class="callout"><em>Trade-off acknowledged:</em> Gemini 2.5 Flash and Claude do not produce identical output quality on analytical tasks. Synthesis tasks that were previously assigned to Flash occasionally produced shallower analysis. The current split — Flash for research volume, Claude for synthesis depth — reflects where quality differences are consequential versus acceptable.</p>
+
+  <h3>Self-Correction</h3>
+  <p>Research agents can get stuck. A research objective may return low-quality web results, hit a dead end, or produce findings that contradict the existing knowledge base. The system handles this through the ExecutionAgent.</p>
+  <p>When a research agent flags uncertainty or low confidence, the ExecutionAgent receives the objective with context about what was tried. It decides: deepen the current approach, pivot to a different angle, or mark the objective as requiring human review. This prevents the system from silently producing low-quality output when the research environment is noisy.</p>
+  <p>8,500+ completed objectives means the self-correction loop has run thousands of times. It is not a theoretical feature — it is what keeps the system running through bad data days, API outages, and ambiguous research questions.</p>
+
+  <hr class="rule">
+
+  <h2>Memory Architecture</h2>
+
+  <h3>Two-Layer Storage</h3>
+  <p>FrontierAI uses two storage systems with distinct purposes:</p>
+  <ul>
+    <li>PostgreSQL for structured data — research objective records, agent run logs, regime classifications, pillar scores, publication records. Queryable, relational, durable.</li>
+    <li>Pinecone for vector storage — embeddings of research findings, synthesis outputs, and regime narratives. Enables semantic retrieval across the full knowledge base.</li>
+  </ul>
+  <p>The split is intentional. PostgreSQL answers structured questions: what objectives ran last Monday, what was the confidence score on the Goldilocks classification in March, which agents failed in the last 24 hours. Pinecone answers semantic questions: what prior research is most relevant to a new objective about credit spread compression.</p>
+
+  <h3>Why Pinecone Over Self-Hosted</h3>
+  <p>Three options existed: Pinecone managed service, pgvector extension on the existing PostgreSQL instance, or a self-hosted Weaviate or Qdrant instance.</p>
+  <ul>
+    <li>pgvector was ruled out early. FrontierAI runs on local hardware with limited RAM. Running high-dimensional vector operations on the same Postgres instance handling structured data would create resource contention during peak research runs.</li>
+    <li>Self-hosted vector database was ruled out for the same reason — local hardware constraint. Also adds operational overhead that a single-operator system cannot absorb.</li>
+    <li>Pinecone managed service: higher per-query cost than self-hosted, but zero operational overhead, no hardware contention, and purpose-built performance for the retrieval pattern FrontierAI uses.</li>
+  </ul>
+  <p>At 8,500+ research objectives, the Pinecone index contains tens of thousands of embeddings. Retrieval latency is consistent. The cost trade-off has been worth it.</p>
+  <p class="callout"><em>Reusable pattern:</em> The two-layer memory architecture — relational for structured queries, vector for semantic retrieval — is a generalizable pattern for any AI system that needs both operational observability and knowledge retrieval. The split eliminates the temptation to use a vector database as a general-purpose store, which degrades both retrieval quality and operational clarity.</p>
+
+  <h3>Embedding Strategy</h3>
+  <p>Research findings are embedded at the paragraph level, not the document level. Document-level embeddings produce vectors that average meaning across the whole document, which dilutes specificity. Paragraph-level embeddings preserve distinct claims, which is what retrieval needs to surface when a synthesis agent is looking for evidence on a specific point.</p>
+  <p>The trade-off: more embeddings means higher storage cost and more retrieval candidates to re-rank. At the current scale this is manageable. At 10x scale it would require a chunking strategy review.</p>
+
+  <hr class="rule">
+
+  <h2>Orchestration</h2>
+
+  <h3>Queue-Based vs. Event-Driven</h3>
+  <p>FrontierAI uses a queue-based orchestration pattern via Upstash Redis rather than an event-driven pattern. This was a deliberate choice with a specific trade-off.</p>
+  <p>Event-driven systems are more reactive — an agent publishes an event and downstream agents respond immediately. Lower latency, higher coupling. Queue-based systems are more decoupled — the orchestrator controls dispatch timing, can throttle under load, and has a single source of truth about what is in progress.</p>
+  <p>For a system running 24/7 on local hardware with external API rate limits, decoupling is more valuable than latency. The 600-second master loop cadence is not a limitation — it is a feature. It prevents the system from hammering APIs during rate limit windows and gives the orchestrator time to assess system health before the next dispatch cycle.</p>
+
+  <h3>Failure Handling</h3>
+  <p>Three failure modes matter in practice:</p>
+  <ul>
+    <li>Agent crash: the orchestrator detects absence of a completion signal after a timeout threshold and requeues the objective. Health Monitor surfaces repeated failures on specific objective types.</li>
+    <li>API failure: external API outages (Tavily, Anthropic, Google, Pinecone) are caught at the agent level. Agents return a structured failure result rather than throwing. The orchestrator decides whether to retry immediately, defer, or escalate to human review.</li>
+    <li>Data quality failure: synthesis output that fails confidence thresholds is flagged by the Catalyst Monitor rather than published. The SAIR scorecard requires manual review before going live.</li>
+  </ul>
+  <p>The human-in-the-loop gate is not a limitation of the architecture. It is a design choice. Fully autonomous publishing to a subscriber-facing financial intelligence platform would be irresponsible. The system is built to maximize autonomous research while keeping a human accountable for what gets published.</p>
+
+  <h3>Weekly Rhythm</h3>
+  <p>FrontierAI operates on a structured weekly schedule:</p>
+  <ul>
+    <li>Monday: 8 dedicated regime classification objectives. The regime engine re-evaluates all 7 pillars with fresh FRED data.</li>
+    <li>Wednesday: 8 SAIR (Sovereign AI Industrial Revolution) framework objectives.</li>
+    <li>Continuous: general research objectives across macro, crypto, geopolitics, and credit markets.</li>
+  </ul>
+  <p>The rhythm exists because some research has temporal structure. Regime classification is most valuable when it is consistent — same methodology, same cadence, comparable to prior periods.</p>
+
+  <hr class="rule">
+
+  <h2>Integration Architecture</h2>
+
+  <h3>FrontierAI to Avital Research</h3>
+  <p>FrontierAI and Avital Research are separate systems that communicate through a defined integration point. The AvitalSyncAgent runs after regime classification objectives complete. It reads synthesis output from the memory layer, formats it for the Avital API, and pushes updated regime classifications, pillar scores, and portfolio guidance to the Avital backend.</p>
+  <p>The integration is one-directional: FrontierAI writes to Avital, Avital does not write back. This keeps the systems decoupled — Avital can be rebuilt or migrated without touching FrontierAI's core research pipeline.</p>
+
+  <h3>External Data Sources</h3>
+  <ul>
+    <li><code>FRED</code> — macroeconomic indicators. Primary source for regime pillar scoring.</li>
+    <li><code>Tavily</code> — web search API for current events and non-FRED data.</li>
+    <li><code>Polygon.io</code> — market data for stress indicators and asset price feeds.</li>
+    <li><code>CoinGecko</code> — crypto market data for digital asset coverage.</li>
+  </ul>
+  <p>Each integration has a failure mode handler. FRED outages are rare but consequential — a Monday regime run that cannot access FRED data is deferred rather than run on stale data.</p>
+
+  <hr class="rule">
+
+  <h2>Security Architecture</h2>
+  <p>FrontierAI runs on local hardware. The ClawFactory security substrate that packages FrontierAI for external distribution applies the same principles to that deployment context:</p>
+  <ul>
+    <li>WSL2 sandbox isolates the agent runtime in a scoped Linux user environment.</li>
+    <li>nftables egress firewall restricts outbound network access to the specific Linux UID running the agents.</li>
+    <li>DPAPI stores API keys in Windows Credential Manager — encrypted at rest, bound to the Windows user account.</li>
+    <li>Loopback-only gateway binding prevents the agent gateway from being accessible outside localhost.</li>
+    <li>Kill Switch performs instant teardown — terminates processes, clears the gateway, revokes the active session.</li>
+  </ul>
+  <p>The security architecture was designed before ClawFactory existed as a product. The requirement was personal: run AI agents locally without creating an exfiltration risk or a persistent attack surface. The productization came after the security model was proven in production.</p>
+
+  <hr class="rule">
+
+  <h2>What Would Be Different at Enterprise Scale</h2>
+  <p>FrontierAI is a single-operator system built for continuous research on local hardware. Several architectural decisions would change at enterprise scale:</p>
+  <ul>
+    <li>Orchestration would move from a local Python process to a managed workflow engine — Temporal, Prefect, or Airflow — with distributed execution, built-in retry semantics, and observability tooling.</li>
+    <li>The queue would move from Upstash Redis to a more durable message broker — SQS, Kafka, or Pub/Sub — depending on throughput and ordering requirements.</li>
+    <li>The two-layer memory architecture would scale horizontally. PostgreSQL would move to RDS or Cloud SQL. Pinecone would remain managed but would require a namespace strategy for multi-tenant isolation.</li>
+    <li>Model selection would require a formal cost-quality framework rather than operator intuition. At enterprise volume, model cost per token is a budget line item, not an afterthought.</li>
+    <li>The human approval gate would become a structured review workflow rather than a manual check. The gate stays — the tooling around it changes.</li>
+  </ul>
+  <p>The core architectural decisions — specialization over generality, two-layer memory, queue-based orchestration, decoupled integration, human gate on publish — are the same decisions that would survive the transition to enterprise scale. The implementation details change. The design principles do not.</p>
+
+  <hr class="rule">
+
+  <p class="article-meta">bretmckinney.com · bret@bretmckinney.com · All systems described are live production builds.</p>
+</article>
+
+<footer class="footer">
+  <div>&copy; 2026 Bret McKinney</div>
+  <div class="footer-links">
+    <a href="https://github.com/BuzzardsBay" target="_blank" rel="noopener">github &rarr;</a>
+    <a href="mailto:bret@bretmckinney.com">email &rarr;</a>
+  </div>
+  <div>bretmckinney.com</div>
+</footer>
+
+</body>
+</html>
