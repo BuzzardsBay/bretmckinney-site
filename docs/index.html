@@ -158,6 +158,28 @@ a { color: inherit; text-decoration: none; }
 .term-prompt { color: var(--accent); white-space: nowrap; }
 .term-in { flex: 1; min-width: 0; background: none; border: none; outline: none; color: var(--text-primary); font-family: inherit; font-size: inherit; caret-color: var(--accent); }
 
+/* ASK AVITAL LAUNCHER */
+.ask-box {
+  display: flex; align-items: center; gap: 10px; max-width: 640px;
+  background: #0f141c; border: 0.5px solid var(--accent); border-radius: 10px;
+  padding: 8px 8px 8px 16px;
+}
+.ask-box .ask-icon { color: var(--accent); font-family: 'IBM Plex Mono', monospace; font-size: 14px; }
+.ask-in {
+  flex: 1; min-width: 0; background: none; border: none; outline: none;
+  font-family: 'IBM Plex Sans', sans-serif; font-size: 14px; font-weight: 300;
+  color: var(--text-primary); caret-color: var(--accent);
+}
+.ask-in::placeholder { color: var(--text-muted); }
+.ask-go {
+  flex-shrink: 0; cursor: pointer; background: var(--accent); color: #0c0f14;
+  border: none; border-radius: 6px; padding: 9px 14px;
+  font-family: 'IBM Plex Mono', monospace; font-size: 11px; letter-spacing: 0.06em;
+  transition: background 0.15s;
+}
+.ask-go:hover { background: var(--accent-hover); }
+.ask-note { font-family: 'IBM Plex Mono', monospace; font-size: 10px; color: var(--text-faint); margin-top: 10px; letter-spacing: 0.04em; }
+
 /* NAV */
 .nav {
   position: fixed; top: 0; left: 0; right: 0;
@@ -584,6 +606,17 @@ a { color: inherit; text-decoration: none; }
     </div>
 
   </div>
+</section>
+
+<section class="section" id="ask">
+  <div class="section-label">ASK AVITAL</div>
+  <p class="sys-intro">Avital Research runs a macro research copilot grounded in the regime engine. Ask it something and it opens in the live app.</p>
+  <form class="ask-box" id="ask-box">
+    <span class="ask-icon">&#9656;</span>
+    <input class="ask-in" id="ask-in" placeholder="Ask the macro copilot a question..." aria-label="Ask Avital" autocomplete="off">
+    <button class="ask-go" type="submit">ASK AVITAL &rarr;</button>
+  </form>
+  <p class="ask-note">Opens the live copilot on Avital Research.</p>
 </section>
 
 <section class="section" id="faq">
@@ -1237,6 +1270,19 @@ const TIPS = {
   inp.addEventListener('keydown', function(e){ if (e.key === 'Enter') { run(inp.value); inp.value = ''; out.scrollTop = out.scrollHeight; } });
   term.addEventListener('click', function(){ inp.focus(); });
   line('FrontierAI shell v1. type <span class="o-gold">help</span>.', 'o-dim');
+})();
+
+/* ---- ask avital launcher ---- */
+(function(){
+  const form = document.getElementById('ask-box'), inp = document.getElementById('ask-in');
+  if (!form) return;
+  const BASE = 'https://avitalresearch.com';
+  form.addEventListener('submit', function(e){
+    e.preventDefault();
+    const q = (inp && inp.value || '').trim();
+    const url = q ? BASE + '/?ask=' + encodeURIComponent(q) : BASE;
+    window.open(url, '_blank', 'noopener');
+  });
 })();
 </script>
 
