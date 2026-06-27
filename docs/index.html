@@ -105,6 +105,43 @@ a { color: inherit; text-decoration: none; }
 #boot .boot-gold { color: var(--accent); }
 #boot .boot-skip { margin-top: 22px; font-size: 10px; letter-spacing: 0.12em; color: var(--text-faint); }
 
+/* REGIME THEME SWITCH */
+.regime-switch {
+  position: fixed; left: 16px; bottom: 14px; z-index: 1500;
+  display: flex; align-items: center; gap: 8px; padding: 7px 11px;
+  background: rgba(15,20,28,0.72); border: 0.5px solid var(--border);
+  border-radius: 20px; backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px);
+}
+.regime-switch .rs-label { font-family: 'IBM Plex Mono', monospace; font-size: 8.5px; letter-spacing: 0.14em; color: var(--text-faint); }
+.rs-dot { width: 12px; height: 12px; border-radius: 50%; border: 1px solid rgba(255,255,255,0.16); cursor: pointer; padding: 0; transition: transform 0.12s ease; }
+.rs-dot:hover { transform: scale(1.28); }
+.rs-dot.active { box-shadow: 0 0 0 2px #0c0f14, 0 0 0 3px rgba(255,255,255,0.65); }
+@media (max-width: 600px) { .regime-switch { display: none; } }
+
+/* PIPELINE RUN BUTTON */
+.run-objective {
+  display: block; margin: 14px auto 0; background: none; cursor: pointer;
+  border: 0.5px solid var(--accent); border-radius: 6px; padding: 8px 16px;
+  font-family: 'IBM Plex Mono', monospace; font-size: 10px; letter-spacing: 0.14em;
+  color: var(--accent); transition: background 0.15s, color 0.15s;
+}
+.run-objective:hover { background: var(--accent); color: #0c0f14; }
+.run-objective.running { opacity: 0.6; cursor: default; }
+
+/* CONSOLE */
+.term {
+  background: #0a0d12; border: 0.5px solid var(--border); border-radius: 8px;
+  padding: 16px 18px; font-family: 'IBM Plex Mono', monospace; font-size: 12.5px;
+  line-height: 1.7; max-width: 720px;
+}
+.term-out { color: var(--text-body); white-space: pre-wrap; max-height: 260px; overflow-y: auto; }
+.term-out .o-gold { color: var(--accent); }
+.term-out .o-dim { color: var(--text-faint); }
+.term-out .o-cmd { color: var(--text-secondary); }
+.term-line { display: flex; align-items: baseline; gap: 8px; margin-top: 8px; }
+.term-prompt { color: var(--accent); white-space: nowrap; }
+.term-in { flex: 1; min-width: 0; background: none; border: none; outline: none; color: var(--text-primary); font-family: inherit; font-size: inherit; caret-color: var(--accent); }
+
 /* NAV */
 .nav {
   position: fixed; top: 0; left: 0; right: 0;
@@ -261,10 +298,10 @@ a { color: inherit; text-decoration: none; }
   letter-spacing: 0.01em;
   transition: color 0.15s;
 }
-.faq-question:hover { color: #d4a35a; }
+.faq-question:hover { color: var(--accent); }
 .faq-chevron {
   font-size: 12px;
-  color: #d4a35a;
+  color: var(--accent);
   transition: transform 0.2s;
   flex-shrink: 0;
   margin-left: 16px;
@@ -401,6 +438,14 @@ a { color: inherit; text-decoration: none; }
 
 <canvas id="bg-fx" aria-hidden="true"></canvas>
 <div id="boot" aria-hidden="true"><div class="boot-inner"><div id="boot-log"></div><div class="boot-skip">click anywhere to skip</div></div></div>
+<div class="regime-switch" id="regime-switch" aria-label="accent theme">
+  <span class="rs-label">REGIME</span>
+  <button class="rs-dot" data-a="#d4a35a" data-h="#e0b46a" data-t="212,163,90" data-b="233,184,110" title="Reflation"></button>
+  <button class="rs-dot" data-a="#4fb487" data-h="#6fce9f" data-t="79,180,135" data-b="120,210,165" title="Goldilocks"></button>
+  <button class="rs-dot" data-a="#d86a4a" data-h="#e8855f" data-t="216,106,74" data-b="235,140,100" title="Stagflation"></button>
+  <button class="rs-dot" data-a="#5f9fd0" data-h="#7fb8e0" data-t="95,159,208" data-b="140,190,225" title="Disinflation"></button>
+  <button class="rs-dot" data-a="#b083d8" data-h="#c6a0e8" data-t="176,131,216" data-b="200,165,235" title="Transition"></button>
+</div>
 <div class="agent-tip" id="agent-tip" role="tooltip"><span class="tip-title"></span><span class="tip-body"></span></div>
 <div class="killbox" id="killbox" aria-hidden="true">
   <div class="killbox-label">SELF-DESTRUCT SEQUENCE</div>
@@ -509,6 +554,7 @@ a { color: inherit; text-decoration: none; }
     <div class="sys-diagram">
       <svg viewBox='0 0 720 492' xmlns='http://www.w3.org/2000/svg' role='img'><defs><linearGradient id='sysf-ng' x1='0' y1='0' x2='0' y2='1'><stop offset='0' stop-color='#172029'/><stop offset='1' stop-color='#0e141d'/></linearGradient><linearGradient id='sysf-hg' x1='0' y1='0' x2='0' y2='1'><stop offset='0' stop-color='#241d12'/><stop offset='1' stop-color='#14100a'/></linearGradient><linearGradient id='sysf-sg' x1='0' y1='0' x2='0' y2='1'><stop offset='0' stop-color='#102017'/><stop offset='1' stop-color='#0a140e'/></linearGradient><linearGradient id='sysf-cl' x1='0' y1='0' x2='0' y2='1'><stop offset='0' stop-color='#34506a'/><stop offset='1' stop-color='#52708a'/></linearGradient><radialGradient id='sysf-glow' cx='0.5' cy='0.5' r='0.5'><stop offset='0' stop-color='#d4a35a' stop-opacity='0.20'/><stop offset='1' stop-color='#d4a35a' stop-opacity='0'/></radialGradient><filter id='sysf-soft' x='-60%' y='-60%' width='220%' height='220%'><feGaussianBlur stdDev='3.2' result='b'/><feMerge><feMergeNode in='b'/><feMergeNode in='SourceGraphic'/></feMerge></filter><pattern id='sysf-grid' width='30' height='30' patternUnits='userSpaceOnUse'><path d='M30 0 H0 V30' fill='none' stroke='#1b2733' stroke-width='1' stroke-opacity='0.45'/></pattern><marker id='sysf-ah' markerWidth='10' markerHeight='10' refX='5' refY='3' orient='auto'><path d='M0,0 L6,3 L0,6 Z' fill='#6f93b0'/></marker><marker id='sysf-ahg' markerWidth='10' markerHeight='10' refX='5' refY='3' orient='auto'><path d='M0,0 L6,3 L0,6 Z' fill='#2ecc8f'/></marker><marker id='sysf-aha' markerWidth='10' markerHeight='10' refX='5' refY='3' orient='auto'><path d='M0,0 L6,3 L0,6 Z' fill='#d4a35a'/></marker></defs><style>.fx-node{transition:transform .16s ease;transform-box:fill-box;transform-origin:center;}.fx-node:hover{transform:translateY(-2px);}.fx-flow{stroke-dasharray:5 7;}.fx-loop{stroke-dasharray:5 6;}@media (prefers-reduced-motion: no-preference){.fx-flow{animation:fxd 1.4s linear infinite;}.fx-loop{animation:fxd 2.2s linear infinite;}.fx-pulse{animation:fxp 3s ease-in-out infinite;transform-box:fill-box;transform-origin:center;}}@keyframes fxd{to{stroke-dashoffset:-24;}}@keyframes fxp{0%,100%{opacity:.4;}50%{opacity:.95;}}</style><rect x='0' y='0' width='720' height='492' rx='10' fill='#090c11'/><clipPath id='sysf-clip'><rect x='1' y='1' width='718' height='490' rx='9'/></clipPath><g clip-path='url(#sysf-clip)'><rect x='0' y='0' width='720' height='492' fill='url(#sysf-grid)'/><ellipse cx='300' cy='205' rx='250' ry='150' fill='url(#sysf-glow)'/></g><path d='M10,22 V10 H22' stroke='#d4a35a' stroke-width='1.2' fill='none' opacity='0.5'/><path d='M710,22 V10 H698' stroke='#d4a35a' stroke-width='1.2' fill='none' opacity='0.5'/><path d='M10,470 V482 H22' stroke='#d4a35a' stroke-width='1.2' fill='none' opacity='0.5'/><path d='M710,470 V482 H698' stroke='#d4a35a' stroke-width='1.2' fill='none' opacity='0.5'/><circle cx='24' cy='23' r='3.6' fill='#d4a35a'/><circle cx='24' cy='23' r='3.6' fill='#d4a35a' class='fx-pulse'/><text x='38' y='27' font-family='IBM Plex Mono, ui-monospace, monospace' font-size='10.5' letter-spacing='2' fill='#aecbde'>SYSTEM ARCHITECTURE</text><line x1='20' y1='37' x2='185' y2='37' stroke='#d4a35a' stroke-width='1.4' opacity='0.7'/><text x='120' y='52' font-family='IBM Plex Mono, ui-monospace, monospace' font-size='9' letter-spacing='1' fill='#6f8a9c'>DATA SOURCES</text><g class='fx-node'><rect x='120' y='56' width='84' height='28' rx='6' fill='url(#sysf-ng)' stroke='#3a5468' stroke-width='0.9'/><text x='162' y='74' font-family='IBM Plex Mono, ui-monospace, monospace' font-size='9.5' fill='#aecbde' text-anchor='middle'>FRED</text></g><g class='fx-node'><rect x='212' y='56' width='84' height='28' rx='6' fill='url(#sysf-ng)' stroke='#3a5468' stroke-width='0.9'/><text x='254' y='74' font-family='IBM Plex Mono, ui-monospace, monospace' font-size='9.5' fill='#aecbde' text-anchor='middle'>Tavily</text></g><g class='fx-node'><rect x='304' y='56' width='84' height='28' rx='6' fill='url(#sysf-ng)' stroke='#3a5468' stroke-width='0.9'/><text x='346' y='74' font-family='IBM Plex Mono, ui-monospace, monospace' font-size='9.5' fill='#aecbde' text-anchor='middle'>Polygon.io</text></g><g class='fx-node'><rect x='396' y='56' width='84' height='28' rx='6' fill='url(#sysf-ng)' stroke='#3a5468' stroke-width='0.9'/><text x='438' y='74' font-family='IBM Plex Mono, ui-monospace, monospace' font-size='9.5' fill='#aecbde' text-anchor='middle'>CoinGecko</text></g><line x1='300' y1='86' x2='300' y2='102' stroke='url(#sysf-cl)' stroke-width='1.5'/><line x1='300' y1='86' x2='300' y2='102' stroke='#aecbde' stroke-width='1.4' class='fx-flow' opacity='0.7' marker-end='url(#sysf-ah)'/><g class='fx-node'><rect x='120' y='104' width='360' height='42' rx='8' fill='url(#sysf-ng)' stroke='#3a5468' stroke-width='1.2'/><line x1='130' y1='105' x2='470' y2='105' stroke='#ffffff' stroke-opacity='0.06' stroke-width='1'/><g fill='#aecbde' stroke='none'><rect x='139' y='118' width='16' height='3' rx='1.5'/><rect x='139' y='124' width='16' height='3' rx='1.5'/><rect x='139' y='130' width='16' height='3' rx='1.5'/></g><text x='168' y='122' font-family='IBM Plex Mono, ui-monospace, monospace' font-size='12.5' font-weight='600' fill='#aecbde'>Objective Queue</text><text x='168' y='138' font-family='IBM Plex Mono, ui-monospace, monospace' font-size='10' fill='#6f8a9c'>Upstash Redis · self-generated objectives</text></g><line x1='300' y1='146' x2='300' y2='162' stroke='url(#sysf-cl)' stroke-width='1.5'/><line x1='300' y1='146' x2='300' y2='162' stroke='#aecbde' stroke-width='1.4' class='fx-flow' opacity='0.7' marker-end='url(#sysf-ah)'/><rect x='117' y='159' width='366' height='94' rx='10' fill='none' stroke='#d4a35a' stroke-width='1' filter='url(#sysf-soft)' opacity='0.6' class='fx-pulse'/><g class='fx-node'><rect x='120' y='162' width='360' height='88' rx='8' fill='url(#sysf-hg)' stroke='#d4a35a' stroke-width='1.2'/><line x1='130' y1='163' x2='470' y2='163' stroke='#ffffff' stroke-opacity='0.06' stroke-width='1'/><g stroke='#e0b46a' stroke-width='1.6' fill='none' stroke-linecap='round' stroke-linejoin='round'><rect x='140' y='196' width='12' height='12' rx='2'/><rect x='143.5' y='199.5' width='5' height='5' rx='1'/><line x1='143' y1='193' x2='143' y2='196'/><line x1='143' y1='208' x2='143' y2='211'/><line x1='146' y1='193' x2='146' y2='196'/><line x1='146' y1='208' x2='146' y2='211'/><line x1='149' y1='193' x2='149' y2='196'/><line x1='149' y1='208' x2='149' y2='211'/><line x1='137' y1='199' x2='140' y2='199'/><line x1='152' y1='199' x2='155' y2='199'/><line x1='137' y1='202' x2='140' y2='202'/><line x1='152' y1='202' x2='155' y2='202'/><line x1='137' y1='205' x2='140' y2='205'/><line x1='152' y1='205' x2='155' y2='205'/></g><text x='172' y='188' font-family='IBM Plex Mono, ui-monospace, monospace' font-size='16' font-weight='600' fill='#e8f1f7'>INTELLIGENCE ENGINE</text><text x='172' y='208' font-family='IBM Plex Mono, ui-monospace, monospace' font-size='9.5' fill='#9db4c4'>research · memory · reasoning · synthesis</text><text x='172' y='225' font-family='IBM Plex Mono, ui-monospace, monospace' font-size='9.5' fill='#6f8a9c'>FrontierAI · 21 agents · 600s master loop</text><text x='172' y='242' font-family='IBM Plex Mono, ui-monospace, monospace' font-size='8.5' fill='#5f7686'>clusters: research · knowledge · comms · ops</text></g><rect x='504' y='162' width='198' height='92' rx='8' fill='#0d141d' stroke='#243648' stroke-width='1'/><text x='516' y='180' font-family='IBM Plex Mono, ui-monospace, monospace' font-size='9.5' letter-spacing='1' fill='#8aa0b2'>MEMORY LAYER</text><g class='fx-node'><rect x='514' y='188' width='178' height='28' rx='6' fill='url(#sysf-ng)' stroke='#3a5468' stroke-width='0.9'/><text x='524' y='206' font-family='IBM Plex Mono, ui-monospace, monospace' font-size='9.5' fill='#aecbde'>PostgreSQL · structured</text></g><g class='fx-node'><rect x='514' y='220' width='178' height='28' rx='6' fill='url(#sysf-ng)' stroke='#3a5468' stroke-width='0.9'/><text x='524' y='238' font-family='IBM Plex Mono, ui-monospace, monospace' font-size='9.5' fill='#aecbde'>Pinecone · vector</text></g><line x1='480' y1='196' x2='502' y2='196' stroke='#6f93b0' stroke-width='1.2' marker-end='url(#sysf-ah)'/><text x='491' y='192' font-family='IBM Plex Mono, ui-monospace, monospace' font-size='8' fill='#6f8a9c' text-anchor='middle'>write</text><line x1='502' y1='226' x2='480' y2='226' stroke='#6f93b0' stroke-width='1.2' marker-end='url(#sysf-ah)'/><text x='491' y='240' font-family='IBM Plex Mono, ui-monospace, monospace' font-size='8' fill='#6f8a9c' text-anchor='middle'>read</text><line x1='300' y1='250' x2='300' y2='266' stroke='url(#sysf-cl)' stroke-width='1.5'/><line x1='300' y1='250' x2='300' y2='266' stroke='#aecbde' stroke-width='1.4' class='fx-flow' opacity='0.7' marker-end='url(#sysf-ah)'/><g class='fx-node'><rect x='210' y='266' width='180' height='22' rx='5' fill='url(#sysf-hg)' stroke='#d4a35a' stroke-width='1.1'/><text x='300' y='281' font-family='IBM Plex Mono, ui-monospace, monospace' font-size='9.5' fill='#e8c98a' text-anchor='middle'>human approval gate</text></g><line x1='300' y1='288' x2='300' y2='304' stroke='url(#sysf-cl)' stroke-width='1.5'/><line x1='300' y1='288' x2='300' y2='304' stroke='#aecbde' stroke-width='1.4' class='fx-flow' opacity='0.7' marker-end='url(#sysf-ah)'/><g class='fx-node'><rect x='120' y='306' width='360' height='78' rx='8' fill='url(#sysf-ng)' stroke='#3a5468' stroke-width='1.2'/><line x1='130' y1='307' x2='470' y2='307' stroke='#ffffff' stroke-opacity='0.06' stroke-width='1'/><g stroke='#aecbde' stroke-width='1.6' fill='none' stroke-linecap='round' stroke-linejoin='round'><circle cx='142' cy='347' r='2.5'/><circle cx='154' cy='340' r='2.5'/><circle cx='154' cy='354' r='2.5'/><line x1='144' y1='346' x2='152' y2='341'/><line x1='144' y1='348' x2='152' y2='353'/></g><text x='172' y='332' font-family='IBM Plex Mono, ui-monospace, monospace' font-size='14' font-weight='600' fill='#aecbde'>DISTRIBUTION LAYER</text><text x='172' y='352' font-family='IBM Plex Mono, ui-monospace, monospace' font-size='9.5' fill='#6f8a9c'>dashboards · reports · copilot · stress indicators</text><text x='172' y='372' font-family='IBM Plex Mono, ui-monospace, monospace' font-size='9.5' fill='#6f8a9c'>Avital Research · subscriber-facing</text></g><line x1='300' y1='384' x2='300' y2='400' stroke='url(#sysf-cl)' stroke-width='1.5'/><line x1='300' y1='384' x2='300' y2='400' stroke='#aecbde' stroke-width='1.4' class='fx-flow' opacity='0.7' marker-end='url(#sysf-ahg)'/><g class='fx-node'><rect x='120' y='402' width='360' height='42' rx='8' fill='url(#sysf-sg)' stroke='#2ecc8f' stroke-width='1.2'/><line x1='130' y1='403' x2='470' y2='403' stroke='#ffffff' stroke-opacity='0.06' stroke-width='1'/><g stroke='#5fe0ac' stroke-width='1.6' fill='none' stroke-linecap='round' stroke-linejoin='round'><path d='M146,410 l7,3 v5 c0,5 -3.5,8 -7,10 c-3.5,-2 -7,-5 -7,-10 v-5 z'/><path d='M143,419 l2.5,2.5 l4.5,-5'/></g><text x='172' y='424' font-family='IBM Plex Mono, ui-monospace, monospace' font-size='13' font-weight='600' fill='#8fe9c0'>VALIDATED INTELLIGENCE</text><text x='172' y='438' font-family='IBM Plex Mono, ui-monospace, monospace' font-size='9.5' fill='#6f8a9c'>delivered to subscribers</text></g><path d='M120,423 H96 V200 H118' fill='none' stroke='#d4a35a' stroke-width='1.4' filter='url(#sysf-soft)' opacity='0.85' class='fx-loop' marker-end='url(#sysf-aha)'/><text transform='rotate(-90 84 311)' x='84' y='311' font-family='IBM Plex Mono, ui-monospace, monospace' font-size='9' letter-spacing='1' fill='#e0b46a' text-anchor='middle'>continuous loop</text><text x='360' y='464' font-family='IBM Plex Mono, ui-monospace, monospace' font-size='9' fill='#6f8a9c' text-anchor='middle'>Inputs to validated intelligence — a human approves before anything ships.</text></svg>
       <div class="sys-cap">Inputs flow through the intelligence engine to the distribution layer -- a human approves before anything ships</div>
+      <button class="run-objective" id="run-objective">&#9654; RUN AN OBJECTIVE</button>
     </div>
 
     <div class="sys-diagram sys-eco-wide">
@@ -603,6 +649,15 @@ a { color: inherit; text-decoration: none; }
         <span class="tag">Inno Setup</span>
       </div>
     </div>
+  </div>
+</section>
+
+<section class="section" id="console">
+  <div class="section-label">CONSOLE</div>
+  <p class="sys-intro">A small shell. Type <span style="color:var(--accent)">help</span>, or try <span style="color:var(--accent)">open clawfactory</span>.</p>
+  <div class="term" id="term">
+    <div class="term-out" id="term-out"></div>
+    <div class="term-line"><span class="term-prompt">visitor@bretmckinney:~$</span><input class="term-in" id="term-in" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" aria-label="terminal input"></div>
   </div>
 </section>
 
@@ -795,7 +850,8 @@ const TIPS = {
   if (!c || !c.getContext) return;
   const ctx = c.getContext('2d');
   const reduce = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
-  const GOLD = '212,163,90', BRIGHT = '233,184,110';
+  let GOLD = '212,163,90', BRIGHT = '233,184,110';
+  window.__bgTint = function(g, b){ GOLD = g; BRIGHT = b; };
   const HEX = '0123456789ABCDEF';
   const TH = 132, TH2 = TH * TH;
   let w = 0, h = 0, pts = [], edges = [], adj = [], packets = [], couriers = [], glyphs = [], mx = 0, my = 0, ox = 0, oy = 0, raf = 0, last = 0, mode = 'normal', boom = 0, sparks = [];
@@ -1058,6 +1114,112 @@ const TIPS = {
     p = (e.keyCode === seq[p]) ? p + 1 : (e.keyCode === seq[0] ? 1 : 0);
     if (p === seq.length) { p = 0; if (window.__selfDestruct) window.__selfDestruct(); }
   });
+})();
+
+/* ---- regime theme switch ---- */
+(function(){
+  const sw = document.getElementById('regime-switch'); if (!sw) return;
+  const dots = sw.querySelectorAll('.rs-dot');
+  function apply(d, save){
+    document.documentElement.style.setProperty('--accent', d.dataset.a);
+    document.documentElement.style.setProperty('--accent-hover', d.dataset.h);
+    if (window.__bgTint) window.__bgTint(d.dataset.t, d.dataset.b);
+    dots.forEach(function(x){ x.classList.toggle('active', x === d); });
+    if (save) { try { localStorage.setItem('regime', d.title); } catch (e) {} }
+  }
+  dots.forEach(function(d){ d.style.background = d.dataset.a; d.addEventListener('click', function(){ apply(d, true); }); });
+  let saved = null; try { saved = localStorage.getItem('regime'); } catch (e) {}
+  let init = dots[0];
+  if (saved) dots.forEach(function(d){ if (d.title === saved) init = d; });
+  apply(init, false);
+})();
+
+/* ---- pipeline play: run an objective through the map ---- */
+(function(){
+  const svg = document.querySelector('#system .sys-diagram svg'), btn = document.getElementById('run-objective');
+  if (!svg || !btn) return;
+  const NS = 'http://www.w3.org/2000/svg';
+  const stages = [
+    { x: 120, y: 104, w: 360, h: 42, cy: 125 },
+    { x: 120, y: 162, w: 360, h: 88, cy: 206 },
+    { x: 210, y: 266, w: 180, h: 22, cy: 277 },
+    { x: 120, y: 306, w: 360, h: 78, cy: 345 },
+    { x: 120, y: 402, w: 360, h: 42, cy: 423 }
+  ];
+  let running = false;
+  function accent(){ return (getComputedStyle(document.documentElement).getPropertyValue('--accent').trim()) || '#d4a35a'; }
+  function ring(st){
+    const r = document.createElementNS(NS, 'rect');
+    r.setAttribute('x', st.x); r.setAttribute('y', st.y); r.setAttribute('width', st.w); r.setAttribute('height', st.h);
+    r.setAttribute('rx', st.h > 40 ? 8 : 5); r.setAttribute('fill', 'none');
+    r.setAttribute('stroke', accent()); r.setAttribute('stroke-width', '2.4');
+    r.style.opacity = '0.95'; r.style.transition = 'opacity 0.7s ease';
+    svg.appendChild(r);
+    requestAnimationFrame(function(){ r.style.opacity = '0'; });
+    setTimeout(function(){ r.remove(); }, 800);
+  }
+  function run(){
+    if (running) return; running = true;
+    btn.classList.add('running'); btn.textContent = 'running objective...';
+    const dot = document.createElementNS(NS, 'circle'), halo = document.createElementNS(NS, 'circle');
+    dot.setAttribute('cx', 300); dot.setAttribute('r', 5); dot.setAttribute('fill', '#ffe4aa'); dot.setAttribute('cy', stages[0].cy);
+    halo.setAttribute('cx', 300); halo.setAttribute('r', 11); halo.setAttribute('fill', accent()); halo.style.opacity = '0.28'; halo.setAttribute('cy', stages[0].cy);
+    svg.appendChild(halo); svg.appendChild(dot);
+    let si = 0;
+    function step(){
+      const from = stages[si], to = stages[si + 1];
+      if (!to) { setTimeout(function(){ dot.remove(); halo.remove(); btn.classList.remove('running'); btn.innerHTML = '&#9654; RUN AN OBJECTIVE'; running = false; }, 450); return; }
+      const dur = 520, t0 = performance.now();
+      function move(now){
+        const k = Math.min(1, (now - t0) / dur), cy = from.cy + (to.cy - from.cy) * k;
+        dot.setAttribute('cy', cy.toFixed(1)); halo.setAttribute('cy', cy.toFixed(1));
+        if (k < 1) requestAnimationFrame(move); else { si++; ring(to); setTimeout(step, 170); }
+      }
+      requestAnimationFrame(move);
+    }
+    ring(stages[0]); setTimeout(step, 260);
+  }
+  btn.addEventListener('click', run);
+})();
+
+/* ---- interactive console ---- */
+(function(){
+  const out = document.getElementById('term-out'), inp = document.getElementById('term-in'), term = document.getElementById('term');
+  if (!out || !inp || !term) return;
+  function line(html, cls){ const d = document.createElement('div'); if (cls) d.className = cls; d.innerHTML = html; out.appendChild(d); }
+  function esc(s){ return s.replace(/[&<>]/g, function(c){ return { '&': '&amp;', '<': '&lt;', '>': '&gt;' }[c]; }); }
+  const sites = { clawfactory: 'https://clawfactory.app', avital: 'https://avitalresearch.com', avitalresearch: 'https://avitalresearch.com', github: 'https://github.com/BuzzardsBay', clawagent: 'https://github.com/BuzzardsBay/clawagent-setup/releases/latest' };
+  const cmds = {
+    help: function(){ return 'commands: <span class="o-gold">help whoami ls projects about regime contact open clear</span>\ntry: <span class="o-dim">open clawfactory</span>'; },
+    whoami: function(){ return 'Bret McKinney - Study Director @ Nelson Laboratories, Salt Lake City.\nSelf-taught engineer. Builds autonomous systems and ships them.'; },
+    ls: function(){ return 'projects/  about  contact  regime'; },
+    projects: function(){ return 'ClawFactory      <span class="o-dim">hardened AI agent installer (LIVE)</span>\nAvital Research   <span class="o-dim">macro regime intelligence (LIVE)</span>\nFrontierAI        <span class="o-dim">21-agent research system (ACTIVE)</span>\nClawAgent         <span class="o-dim">single-agent runtime (LIVE)</span>\nStrategy Factory  <span class="o-dim">backtesting pipeline (BUILDING)</span>'; },
+    about: function(){ return 'Building a fully autonomous AI organization - research agents, trading\ninfrastructure, and the tooling to run it all locally with real security.'; },
+    regime: function(){ return '7 pillars -> 5 regimes. the site accent is themeable - switcher, bottom-left.\nsee the SYSTEM section for the engine.'; },
+    contact: function(){ return 'bret@bretmckinney.com'; },
+    email: function(){ return 'bret@bretmckinney.com'; },
+    sudo: function(){ return '<span class="o-dim">nice try.</span>'; },
+    clear: function(){ out.innerHTML = ''; return null; },
+    date: function(){ return new Date().toString(); }
+  };
+  function run(raw){
+    const cmd = raw.trim();
+    line('<span class="o-gold">visitor@bretmckinney:~$</span> ' + esc(cmd), 'o-cmd');
+    if (!cmd) return;
+    const parts = cmd.split(/\s+/), name = parts[0].toLowerCase();
+    if (name === 'open') {
+      const k = (parts[1] || '').toLowerCase(), url = sites[k];
+      if (url) { line('opening ' + esc(k) + '...'); window.open(url, '_blank', 'noopener'); }
+      else line('open: unknown target. try: clawfactory, avital, clawagent, github', 'o-dim');
+      return;
+    }
+    const fn = cmds[name];
+    if (fn) { const r = fn(); if (r) line(r); }
+    else line(esc(name) + ': command not found. type <span class="o-gold">help</span>', 'o-dim');
+  }
+  inp.addEventListener('keydown', function(e){ if (e.key === 'Enter') { run(inp.value); inp.value = ''; out.scrollTop = out.scrollHeight; } });
+  term.addEventListener('click', function(){ inp.focus(); });
+  line('FrontierAI shell v1. type <span class="o-gold">help</span>.', 'o-dim');
 })();
 </script>
 
