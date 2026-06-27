@@ -57,6 +57,31 @@ a { color: inherit; text-decoration: none; }
   color: var(--text-body); line-height: 1.55;
 }
 
+/* KILL SWITCH SELF-DESTRUCT */
+.killbox {
+  position: fixed; inset: 0; z-index: 2000; display: none;
+  flex-direction: column; align-items: center; justify-content: center;
+  pointer-events: none;
+  background: radial-gradient(circle at center, rgba(24,10,5,0.30), rgba(8,5,4,0.72));
+}
+.killbox.show { display: flex; }
+.killbox-label {
+  font-family: 'IBM Plex Mono', monospace; font-size: 13px; letter-spacing: 0.3em;
+  color: var(--accent); margin-bottom: 16px; opacity: 0.9;
+}
+.killbox-num {
+  font-family: 'IBM Plex Mono', monospace; font-size: 150px; font-weight: 600;
+  line-height: 1; color: #e8f1f7; text-shadow: 0 0 34px rgba(212,163,90,0.55);
+}
+.killbox-num.tick { animation: killpulse 1s ease-out; }
+@keyframes killpulse { 0% { transform: scale(1.6); opacity: 0.15; } 40% { opacity: 1; } 100% { transform: scale(1); opacity: 1; } }
+.killbox-sub {
+  font-family: 'IBM Plex Mono', monospace; font-size: 12px; letter-spacing: 0.2em;
+  color: var(--text-muted); margin-top: 16px;
+}
+.killbox.detonate .killbox-num { color: #ff5a3c; text-shadow: 0 0 60px rgba(255,90,60,0.9); }
+.killbox.detonate .killbox-label { color: #ff5a3c; }
+
 /* NAV */
 .nav {
   position: fixed; top: 0; left: 0; right: 0;
@@ -353,6 +378,11 @@ a { color: inherit; text-decoration: none; }
 
 <canvas id="bg-fx" aria-hidden="true"></canvas>
 <div class="agent-tip" id="agent-tip" role="tooltip"><span class="tip-title"></span><span class="tip-body"></span></div>
+<div class="killbox" id="killbox" aria-hidden="true">
+  <div class="killbox-label">SELF-DESTRUCT SEQUENCE</div>
+  <div class="killbox-num" id="killbox-num">3</div>
+  <div class="killbox-sub" id="killbox-sub">teardown in T-minus</div>
+</div>
 
 <nav class="nav">
   <a href="/" class="wordmark">bret<span class="accent">mckinney</span></a>
@@ -659,6 +689,81 @@ const TIPS = {
   });
 })();
 
+/* ---- kill switch easter egg: page teardown + detonation ---- */
+(function(){
+  const box = document.getElementById('killbox');
+  if (!box) return;
+  const num = document.getElementById('killbox-num'), sub = document.getElementById('killbox-sub');
+  const reduceM = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
+  let armed = false, shards = [], shudderRaf = 0;
+  function tick(){ num.classList.remove('tick'); void num.offsetWidth; num.classList.add('tick'); }
+  function collectShards(){
+    const els = document.querySelectorAll('.nav, .hero, .card, .sys-diagram, .faq-item, .about-block, .footer');
+    const vcx = window.innerWidth / 2, vcy = window.innerHeight / 2;
+    shards = [];
+    els.forEach(function(el){
+      const r = el.getBoundingClientRect();
+      let dx = (r.left + r.width / 2) - vcx, dy = (r.top + r.height / 2) - vcy;
+      const d = Math.hypot(dx, dy) || 1; dx /= d; dy /= d;
+      shards.push({ el: el, dx: dx, dy: dy, rot: (Math.random() - 0.5) * 12, drot: (Math.random() - 0.5) * 70 });
+    });
+  }
+  function shudder(start){
+    const e = Math.min(1, (performance.now() - start) / 3000), e2 = e * e;
+    for (const s of shards){
+      const jit = e2 * 9;
+      const jx = (Math.random() - 0.5) * 2 * jit + s.dx * e2 * 46;
+      const jy = (Math.random() - 0.5) * 2 * jit + s.dy * e2 * 46;
+      s.el.style.transform = 'translate(' + jx.toFixed(1) + 'px,' + jy.toFixed(1) + 'px) rotate(' + (s.rot * e2).toFixed(2) + 'deg)';
+      s.el.style.opacity = (Math.random() < e2 * 0.16) ? (0.45 + Math.random() * 0.4).toFixed(2) : '';
+    }
+    shudderRaf = requestAnimationFrame(function(){ shudder(start); });
+  }
+  function scatter(){
+    const far = Math.max(window.innerWidth, window.innerHeight) * 0.95;
+    for (const s of shards){
+      s.el.style.transition = 'transform 0.55s cubic-bezier(.5,0,.9,.3), opacity 0.5s ease';
+      const fx = s.dx * far + (Math.random() - 0.5) * 140, fy = s.dy * far + (Math.random() - 0.5) * 140;
+      s.el.style.transform = 'translate(' + fx.toFixed(0) + 'px,' + fy.toFixed(0) + 'px) rotate(' + s.drot.toFixed(0) + 'deg) scale(0.85)';
+      s.el.style.opacity = '0';
+    }
+  }
+  function reassemble(){
+    for (const s of shards){
+      s.el.style.transition = 'transform 0.6s cubic-bezier(.2,.7,.3,1), opacity 0.5s ease';
+      s.el.style.transform = ''; s.el.style.opacity = '';
+    }
+  }
+  function cleanup(){
+    for (const s of shards){ s.el.style.transition = ''; s.el.style.transform = ''; s.el.style.opacity = ''; }
+    shards = [];
+  }
+  function arm(){
+    if (armed) return; armed = true;
+    box.classList.add('show'); box.classList.remove('detonate');
+    sub.textContent = 'teardown in T-minus';
+    let n = 3; num.textContent = n; tick();
+    if (!reduceM){ collectShards(); shudder(performance.now()); }
+    const iv = setInterval(function(){
+      n--;
+      if (n > 0){ num.textContent = n; tick(); return; }
+      clearInterval(iv);
+      box.classList.add('detonate'); num.textContent = '0'; tick();
+      sub.textContent = '// teardown executed';
+      if (!reduceM){ cancelAnimationFrame(shudderRaf); scatter(); }
+      if (window.__bgBoom) window.__bgBoom();
+      setTimeout(function(){ box.classList.remove('show', 'detonate'); if (!reduceM) reassemble(); }, 900);
+      setTimeout(function(){ armed = false; if (!reduceM) cleanup(); }, 1700);
+    }, 1000);
+  }
+  document.addEventListener('click', function(e){
+    const node = e.target.closest ? e.target.closest('.fx-node') : null;
+    if (!node) return;
+    const t = node.querySelector('text');
+    if (t && t.textContent.trim() === 'Kill Switch — instant teardown') arm();
+  });
+})();
+
 /* ---- gold digital network background (crypto mesh) ---- */
 (function(){
   const c = document.getElementById('bg-fx');
@@ -668,7 +773,7 @@ const TIPS = {
   const GOLD = '212,163,90', BRIGHT = '233,184,110';
   const HEX = '0123456789ABCDEF';
   const TH = 132, TH2 = TH * TH;
-  let w = 0, h = 0, pts = [], edges = [], adj = [], packets = [], couriers = [], glyphs = [], mx = 0, my = 0, ox = 0, oy = 0, raf = 0, last = 0;
+  let w = 0, h = 0, pts = [], edges = [], adj = [], packets = [], couriers = [], glyphs = [], mx = 0, my = 0, ox = 0, oy = 0, raf = 0, last = 0, mode = 'normal', boom = 0, sparks = [];
   function rnd(a, b){ return a + (b - a) * Math.random(); }
   function spawn(){ return { e: (Math.random() * edges.length) | 0, dir: Math.random() < 0.5, t: Math.random(), sp: rnd(0.12, 0.30) }; }
   function spawnCourier(){
@@ -730,7 +835,69 @@ const TIPS = {
     for (let k = 0; k < gc; k++) glyphs.push({ x: rnd(0, w), y: rnd(0, h), ch: HEX[(Math.random() * 16) | 0], sp: rnd(8, 22), op: rnd(0.04, 0.11), tick: rnd(0, 3) });
     ox = mx = w / 2; oy = my = h / 2;
   }
+  window.__bgBoom = function(){
+    if (reduce) return;
+    const cx = w / 2, cy = h / 2;
+    sparks = [];
+    for (const p of pts) {
+      const dx = p.x - cx, dy = p.y - cy, d = Math.hypot(dx, dy) || 1, s = rnd(360, 1120);
+      sparks.push({ x: p.x, y: p.y, vx: dx / d * s + rnd(-120, 120), vy: dy / d * s + rnd(-120, 120), life: 0, max: rnd(0.9, 1.9), r: rnd(1, 2.6), hot: Math.random() < 0.55, grav: 40 });
+    }
+    for (let i = 0; i < 260; i++) {
+      const a = Math.random() * 6.283, s = rnd(160, 1180);
+      sparks.push({ x: cx + rnd(-26, 26), y: cy + rnd(-26, 26), vx: Math.cos(a) * s, vy: Math.sin(a) * s, life: 0, max: rnd(0.6, 1.7), r: rnd(0.8, 2.8), hot: Math.random() < 0.65, grav: 40 });
+    }
+    for (let i = 0; i < 34; i++) {
+      const a = Math.random() * 6.283, s = rnd(90, 520);
+      sparks.push({ x: cx + rnd(-20, 20), y: cy + rnd(-20, 20), vx: Math.cos(a) * s, vy: Math.sin(a) * s - rnd(0, 120), life: 0, max: rnd(1.6, 2.4), r: rnd(2.2, 4.2), hot: true, grav: 180, ember: true });
+    }
+    boom = 0; mode = 'boom';
+  };
   function draw(t, dt){
+    if (mode === 'boom') {
+      boom += dt;
+      const sh = Math.max(0, 1 - boom / 0.5);
+      if (sh > 0) { c.style.transform = 'translate(' + (rnd(-1, 1) * 8 * sh).toFixed(1) + 'px,' + (rnd(-1, 1) * 8 * sh).toFixed(1) + 'px)'; }
+      else if (c.style.transform) { c.style.transform = ''; }
+      ctx.clearRect(0, 0, w, h);
+      const cx = w / 2, cy = h / 2;
+      if (boom < 0.5) {
+        const fk = 1 - boom / 0.5, fr = 30 + boom * 900;
+        const g = ctx.createRadialGradient(cx, cy, 0, cx, cy, fr);
+        g.addColorStop(0, 'rgba(255,240,210,' + (0.8 * fk).toFixed(3) + ')');
+        g.addColorStop(0.4, 'rgba(255,200,120,' + (0.5 * fk).toFixed(3) + ')');
+        g.addColorStop(1, 'rgba(212,163,90,0)');
+        ctx.fillStyle = g; ctx.beginPath(); ctx.arc(cx, cy, fr, 0, 6.2832); ctx.fill();
+      }
+      const fa = Math.max(0, 0.7 - boom * 1.9);
+      if (fa > 0) { ctx.fillStyle = 'rgba(255,228,176,' + fa.toFixed(3) + ')'; ctx.fillRect(0, 0, w, h); }
+      for (let ri = 0; ri < 3; ri++) {
+        const b = boom - ri * 0.14;
+        if (b > 0 && b < 1.2) {
+          const k = 1 - b / 1.2, rad = b * (900 + ri * 120);
+          ctx.lineWidth = Math.max(0.5, (7 - ri * 1.5) * k);
+          ctx.strokeStyle = 'rgba(' + (ri === 0 ? '255,235,190' : BRIGHT) + ',' + (0.5 * k).toFixed(3) + ')';
+          ctx.beginPath(); ctx.arc(cx, cy, rad, 0, 6.2832); ctx.stroke();
+        }
+      }
+      for (const s of sparks) {
+        if (s.life >= s.max) continue;
+        s.life += dt; s.vx *= 0.985; s.vy *= 0.985; s.vy += (s.grav || 40) * dt;
+        s.x += s.vx * dt; s.y += s.vy * dt;
+        const k = 1 - s.life / s.max;
+        if (s.ember) {
+          ctx.fillStyle = 'rgba(255,210,150,' + (0.9 * k).toFixed(3) + ')';
+          ctx.beginPath(); ctx.arc(s.x, s.y, s.r * (0.5 + 0.5 * k), 0, 6.2832); ctx.fill();
+          ctx.fillStyle = 'rgba(255,180,90,' + (0.18 * k).toFixed(3) + ')';
+          ctx.beginPath(); ctx.arc(s.x, s.y, s.r * 2.4 * (0.5 + 0.5 * k), 0, 6.2832); ctx.fill();
+        } else {
+          ctx.fillStyle = 'rgba(' + (s.hot ? '255,232,180' : GOLD) + ',' + (0.85 * k).toFixed(3) + ')';
+          ctx.beginPath(); ctx.arc(s.x, s.y, s.r * (0.4 + 0.6 * k), 0, 6.2832); ctx.fill();
+        }
+      }
+      if (boom > 2.2) { mode = 'normal'; c.style.transform = ''; build(); }
+      return;
+    }
     ctx.clearRect(0, 0, w, h);
     ox += (mx - ox) * 0.04; oy += (my - oy) * 0.04;
     const pX = (ox - w / 2), pY = (oy - h / 2);
