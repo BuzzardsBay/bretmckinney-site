@@ -82,6 +82,29 @@ a { color: inherit; text-decoration: none; }
 .killbox.detonate .killbox-num { color: #ff5a3c; text-shadow: 0 0 60px rgba(255,90,60,0.9); }
 .killbox.detonate .killbox-label { color: #ff5a3c; }
 
+/* SCROLL REVEALS */
+.reveal { opacity: 0; transform: translateY(20px); transition: opacity 0.6s ease, transform 0.6s ease; }
+.reveal.in { opacity: 1; transform: none; }
+@media (prefers-reduced-motion: reduce) { .reveal { opacity: 1; transform: none; transition: none; } }
+
+/* BOOT SEQUENCE */
+#boot {
+  position: fixed; inset: 0; z-index: 3000; background: #0a0d12;
+  display: flex; align-items: center; justify-content: center;
+  transition: opacity 0.55s ease; cursor: pointer;
+  animation: bootsafe 0s 5s forwards;
+}
+#boot.done { opacity: 0; pointer-events: none; }
+@keyframes bootsafe { to { opacity: 0; visibility: hidden; pointer-events: none; } }
+#boot .boot-inner {
+  width: min(560px, 86vw); font-family: 'IBM Plex Mono', monospace;
+  font-size: 13px; color: var(--text-body); line-height: 1.95;
+}
+#boot .boot-line { white-space: pre-wrap; }
+#boot .boot-ok { color: var(--success); }
+#boot .boot-gold { color: var(--accent); }
+#boot .boot-skip { margin-top: 22px; font-size: 10px; letter-spacing: 0.12em; color: var(--text-faint); }
+
 /* NAV */
 .nav {
   position: fixed; top: 0; left: 0; right: 0;
@@ -377,6 +400,7 @@ a { color: inherit; text-decoration: none; }
 <body>
 
 <canvas id="bg-fx" aria-hidden="true"></canvas>
+<div id="boot" aria-hidden="true"><div class="boot-inner"><div id="boot-log"></div><div class="boot-skip">click anywhere to skip</div></div></div>
 <div class="agent-tip" id="agent-tip" role="tooltip"><span class="tip-title"></span><span class="tip-body"></span></div>
 <div class="killbox" id="killbox" aria-hidden="true">
   <div class="killbox-label">SELF-DESTRUCT SEQUENCE</div>
@@ -756,6 +780,7 @@ const TIPS = {
       setTimeout(function(){ armed = false; if (!reduceM) cleanup(); }, 1700);
     }, 1000);
   }
+  window.__selfDestruct = arm;
   document.addEventListener('click', function(e){
     const node = e.target.closest ? e.target.closest('.fx-node') : null;
     if (!node) return;
@@ -928,6 +953,17 @@ const TIPS = {
       ctx.fillStyle = 'rgba(' + GOLD + ',' + tw.toFixed(3) + ')';
       ctx.beginPath(); ctx.arc(p.x, p.y, p.r, 0, 6.2832); ctx.fill();
     }
+    for (const p of pts) {
+      const dx = p.x - mx, dy = p.y - my, d2 = dx * dx + dy * dy;
+      if (d2 < 26000) {
+        const k = 1 - Math.sqrt(d2) / 161;
+        ctx.strokeStyle = 'rgba(' + BRIGHT + ',' + (k * 0.20).toFixed(3) + ')';
+        ctx.lineWidth = 0.7;
+        ctx.beginPath(); ctx.moveTo(mx, my); ctx.lineTo(p.x, p.y); ctx.stroke();
+        ctx.fillStyle = 'rgba(' + BRIGHT + ',' + (k * 0.5).toFixed(3) + ')';
+        ctx.beginPath(); ctx.arc(p.x, p.y, p.r + k * 1.5, 0, 6.2832); ctx.fill();
+      }
+    }
     for (const k of packets) {
       const e = edges[k.e]; if (!e) continue;
       let a = pts[e[0]], b = pts[e[1]];
@@ -971,6 +1007,57 @@ const TIPS = {
   window.addEventListener('resize', function(){ cancelAnimationFrame(raf); last = 0; build(); if (reduce) draw(0, 0); else raf = requestAnimationFrame(loop); });
   build();
   if (reduce) draw(0, 0); else raf = requestAnimationFrame(loop);
+})();
+
+/* ---- scroll reveals ---- */
+(function(){
+  if (!('IntersectionObserver' in window)) return;
+  if (window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  const els = document.querySelectorAll('.headline, .subtext, .section-label, .card, .sys-intro, .sys-diagram, .faq-item, .about-block p, .stack-tags');
+  const io = new IntersectionObserver(function(entries){
+    entries.forEach(function(en){ if (en.isIntersecting) { en.target.classList.add('in'); io.unobserve(en.target); } });
+  }, { threshold: 0.12, rootMargin: '0px 0px -40px 0px' });
+  els.forEach(function(el){ el.classList.add('reveal'); io.observe(el); });
+})();
+
+/* ---- boot sequence ---- */
+(function(){
+  const boot = document.getElementById('boot'), log = document.getElementById('boot-log');
+  if (!boot || !log) return;
+  const reduceB = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
+  let done = false;
+  function finish(){ if (done) return; done = true; boot.classList.add('done'); setTimeout(function(){ boot.style.display = 'none'; }, 600); }
+  if (reduceB || sessionStorage.getItem('booted')) { boot.style.display = 'none'; return; }
+  sessionStorage.setItem('booted', '1');
+  setTimeout(finish, 4500);
+  boot.addEventListener('click', finish);
+  const lines = [
+    ['$ ', 'init frontier.systems', ''],
+    ['', 'mounting memory layer', 'ok'],
+    ['', 'linking 21 agents', 'ok'],
+    ['', 'regime engine online', 'ok'],
+    ['', 'ready.', 'gold']
+  ];
+  let i = 0;
+  function next(){
+    if (i >= lines.length) { setTimeout(finish, 420); return; }
+    const ln = lines[i++], row = document.createElement('div'); row.className = 'boot-line';
+    const tag = ln[2] === 'ok' ? ' <span class="boot-ok">[ ok ]</span>' : '';
+    row.innerHTML = (ln[0] ? '<span class="boot-gold">' + ln[0] + '</span>' : '') +
+      '<span' + (ln[2] === 'gold' ? ' class="boot-gold"' : '') + '>' + ln[1] + '</span>' + tag;
+    log.appendChild(row);
+    setTimeout(next, 300 + Math.random() * 180);
+  }
+  next();
+})();
+
+/* ---- konami secret: remote self-destruct ---- */
+(function(){
+  const seq = [38,38,40,40,37,39,37,39,66,65]; let p = 0;
+  window.addEventListener('keydown', function(e){
+    p = (e.keyCode === seq[p]) ? p + 1 : (e.keyCode === seq[0] ? 1 : 0);
+    if (p === seq.length) { p = 0; if (window.__selfDestruct) window.__selfDestruct(); }
+  });
 })();
 </script>
 
