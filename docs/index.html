@@ -491,7 +491,7 @@ a { color: inherit; text-decoration: none; }
 
     <div class="card featured">
       <div class="badge live"><span class="dot"></span>LIVE</div>
-      <h3 class="card-title"><a href="https://clawfactory.app" target="_blank" rel="noopener">ClawFactory</a></h3>
+      <h3 class="card-title">ClawFactory</h3>
       <p class="card-desc">A hardened Windows installer that packages an AI agent runtime for non-technical users. Wraps the agent in a sandboxed Linux environment with an egress firewall, encrypted API key storage via Windows Credential Manager, a loopback-only gateway, and a kill switch. 17 build iterations. Full Azure headless validation. Two products: ClawFactory ($149, multi-agent) and ClawAgent ($49, single agent). Under Frontier Automation Systems LLC.</p>
       <button class="card-toggle" aria-expanded="false"><span>VIEW SYSTEM OVERVIEW</span><span class="card-chevron">›</span></button>
       <div class="card-overview"><div class="card-overview-inner">
@@ -595,7 +595,7 @@ a { color: inherit; text-decoration: none; }
       <span class="faq-chevron">&rsaquo;</span>
     </button>
     <div class="faq-answer">
-      <div class="faq-answer-inner">A hardened Windows installer for OpenClaw. WSL2 sandbox, egress firewall scoped to a single Linux user, loopback-only gateway, DPAPI key storage, Kill Switch. One-click .exe. Available at clawfactory.app &mdash; $149 for the full factory setup, $49 for ClawAgent (single agent).</div>
+      <div class="faq-answer-inner">A hardened Windows installer for OpenClaw. WSL2 sandbox, egress firewall scoped to a single Linux user, loopback-only gateway, DPAPI key storage, Kill Switch. One-click .exe. $149 for the full factory setup, $49 for ClawAgent (single agent).</div>
     </div>
   </div>
 
@@ -670,7 +670,7 @@ a { color: inherit; text-decoration: none; }
 
 <section class="section" id="console">
   <div class="section-label">CONSOLE</div>
-  <p class="sys-intro">A small shell. Type <span style="color:var(--accent)">help</span>, or try <span style="color:var(--accent)">open clawfactory</span>.</p>
+  <p class="sys-intro">A small shell. Type <span style="color:var(--accent)">help</span>, or try <span style="color:var(--accent)">open avital</span>.</p>
   <div class="term" id="term">
     <div class="term-out" id="term-out"></div>
     <div class="term-line"><span class="term-prompt">visitor@bretmckinney:~$</span><input class="term-in" id="term-in" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" aria-label="terminal input"></div>
@@ -1204,9 +1204,9 @@ const TIPS = {
   if (!out || !inp || !term) return;
   function line(html, cls){ const d = document.createElement('div'); if (cls) d.className = cls; d.innerHTML = html; out.appendChild(d); }
   function esc(s){ return s.replace(/[&<>]/g, function(c){ return { '&': '&amp;', '<': '&lt;', '>': '&gt;' }[c]; }); }
-  const sites = { clawfactory: 'https://clawfactory.app', avital: 'https://avitalresearch.com', avitalresearch: 'https://avitalresearch.com', github: 'https://github.com/BuzzardsBay', clawagent: 'https://github.com/BuzzardsBay/clawagent-setup/releases/latest' };
+  const sites = { avital: 'https://avitalresearch.com', avitalresearch: 'https://avitalresearch.com', github: 'https://github.com/BuzzardsBay', clawagent: 'https://github.com/BuzzardsBay/clawagent-setup/releases/latest' };
   const cmds = {
-    help: function(){ return 'commands: <span class="o-gold">help whoami ls projects about regime contact open clear</span>\ntry: <span class="o-dim">open clawfactory</span>'; },
+    help: function(){ return 'commands: <span class="o-gold">help whoami ls projects about regime contact open clear</span>\ntry: <span class="o-dim">open avital</span>'; },
     whoami: function(){ return 'Bret McKinney - Study Director @ Nelson Laboratories, Salt Lake City.\nSelf-taught engineer. Builds autonomous systems and ships them.'; },
     ls: function(){ return 'projects/  about  contact  regime'; },
     projects: function(){ return 'ClawFactory      <span class="o-dim">hardened AI agent installer (LIVE)</span>\nAvital Research   <span class="o-dim">macro regime intelligence (LIVE)</span>\nFrontierAI        <span class="o-dim">21-agent research system (ACTIVE)</span>\nClawAgent         <span class="o-dim">single-agent runtime (LIVE)</span>\nStrategy Factory  <span class="o-dim">backtesting pipeline (BUILDING)</span>'; },
@@ -1225,8 +1225,9 @@ const TIPS = {
     const parts = cmd.split(/\s+/), name = parts[0].toLowerCase();
     if (name === 'open') {
       const k = (parts[1] || '').toLowerCase(), url = sites[k];
+      if (k === 'clawfactory') { line('clawfactory.app is coming online soon.', 'o-dim'); return; }
       if (url) { line('opening ' + esc(k) + '...'); window.open(url, '_blank', 'noopener'); }
-      else line('open: unknown target. try: clawfactory, avital, clawagent, github', 'o-dim');
+      else line('open: unknown target. try: avital, clawagent, github', 'o-dim');
       return;
     }
     const fn = cmds[name];
